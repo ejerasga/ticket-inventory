@@ -1,0 +1,97 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\User;
+use App\Http\Requests\CreateUserValidation;
+use Illuminate\Support\Facades\Hash;
+use App\Models\Department;
+use App\Models\Role;
+
+class UserController extends Controller
+{
+    public function index()
+    {
+        $departments = Department::all(); // Fetch all departments
+        $roles = Role::all(); // Fetch all roles
+
+        return view('users.create_users', compact('departments', 'roles'));
+    }
+
+    public function store(Request $request) 
+    {
+        $request->validate([
+            'u_username' => 'required|unique:users,u_username',
+            'u_password' => 'required|min:6',
+            'u_fname' => 'required',
+            'u_lname' => 'required',
+            'u_gender' => 'required',
+            'u_contact' => 'required',
+            'r_id' => 'required|exists:roles,r_id',
+            'd_id' => 'required|exists:departments,d_id',
+        ]);
+
+        User::create([
+            'u_username' => $request->input('u_username'),
+            'u_password' => Hash::make($request->input('u_password')),
+            'u_fname' => $request->input('u_fname'),
+            'u_mname' => $request->input('u_mname'),
+            'u_lname' => $request->input('u_lname'),
+            'u_gender' => $request->input('u_gender'),
+            'u_contact' => $request->input('u_contact'),
+            'r_id' => $request->input('r_id'),
+            'd_id' => $request->input('d_id'),
+        ]);
+        
+
+        return redirect()->route('user_create')->with('success', 'User created successfully!');
+    }
+
+
+    public function edit($u_id)
+    {
+        $rows = User::findOrFail($u_id);
+        $departments = Department::all();
+        $roles = Role::all();
+        return view('users.edit_users', compact('rows', 'departments', 'roles'));
+    }
+
+
+
+    public function update(Request $request, $u_id)
+    {
+        $request->validate([
+            'u_username' => 'required|unique:users,u_username,' . $u_id . ',u_id',
+            'u_fname' => 'required',
+            'u_lname' => 'required',
+            'u_gender' => 'required',
+            'u_contact' => 'required',
+        ]);
+
+        $rows = User::findOrFail($u_id);
+        $rows->u_username = $request->input('u_username');
+        $rows->u_fname = $request->input('u_fname');
+        $rows->u_mname = $request->input('u_mname');
+        $rows->u_lname = $request->input('u_lname');
+        $rows->u_gender = $request->input('u_gender');
+        $rows->u_contact = $request->input('u_contact');
+
+        // Update password only if provided
+        if ($request->filled('u_password')) {
+            $rows->u_password = Hash::make($request->input('u_password'));
+        }
+
+        $rows->save();
+
+        return redirect()->route('user_edit', ['id' => $u_id])->with('success', 'User updated successfully.');
+    }
+
+
+    public function users()
+    {
+        $users = User::all();
+        return view('users.user_list', compact('users'));
+    }
+
+}
