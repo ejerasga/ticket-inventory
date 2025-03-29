@@ -1,7 +1,5 @@
 @extends('layout.header')
-    @section('content')
-
-
+@section('content')
     <div class="container-fluid">
 
         <!-- Page Heading -->
@@ -18,7 +16,8 @@
                     @csrf
                     <div class="form-group">
                         <label for="u_username">Username:</label>
-                        <input type="text" class="form-control" id="u_username" name="u_username" aria-describedby="emailHelp">
+                        <input type="text" class="form-control" id="u_username" name="u_username"
+                            aria-describedby="emailHelp">
                         @error('u_username')
                             <span class="error text-danger">{{ $message }}</span>
                         @enderror
@@ -70,7 +69,8 @@
 
                     <div class="form-group">
                         <label for="u_contact">Contact:</label>
-                        <input type="tel" class="form-control" id="u_contact" name="u_contact" placeholder="09451854051">
+                        <input type="tel" class="form-control" id="u_contact" name="u_contact"
+                            placeholder="09451854051">
                     </div>
 
                     <div class="form-group">
@@ -82,13 +82,14 @@
                             @endforeach
                         </select>
                     </div>
-
                     <div class="form-group">
-                        <label for="d_id">Roles:</label>
+                        <label for="r_id">Roles:</label>
                         <select class="form-control" id="r_id" name="r_id">
                             <option value="">Select Role</option>
                             @foreach ($roles as $role)
-                                <option value="{{ $role->r_id }}">{{ $role->r_name }}</option>
+                                <option value="{{ $role->r_id }}"
+                                    class="role-option {{ $role->r_id != 3 ? 'conditional-role' : '' }}">
+                                    {{ $role->r_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -97,7 +98,39 @@
                 </form>
             </div>
         </div>
-
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const departmentSelect = document.getElementById('d_id');
+            const roleSelect = document.getElementById('r_id');
+            const conditionalRoles = document.querySelectorAll('.conditional-role');
+
+            // Function to update roles based on selected department
+            function updateRoles() {
+                const selectedDepartment = departmentSelect.value;
+
+                // Hide all conditional roles first
+                conditionalRoles.forEach(role => {
+                    role.style.display = 'none';
+                });
+
+                // If department id is 1, show all roles
+                if (selectedDepartment === '1') {
+                    conditionalRoles.forEach(role => {
+                        role.style.display = '';
+                    });
+                }
+
+                // Reset role selection when department changes
+                roleSelect.value = '';
+            }
+
+            // Initial update
+            updateRoles();
+
+            // Listen for changes on department select
+            departmentSelect.addEventListener('change', updateRoles);
+        });
+    </script>
 @endsection
