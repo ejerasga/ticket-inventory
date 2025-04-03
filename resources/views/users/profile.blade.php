@@ -9,7 +9,14 @@
         </nav>
         <hr class="mt-0 mb-4">
 
-        <form action="{{ route('user_update', ['u_id' => $user->u_id]) }}" method="POST">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        <form action="{{ route('profile.update', ['u_id' => $user->u_id]) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -20,9 +27,30 @@
                         <div class="card-header">Profile Picture</div>
                         <div class="card-body text-center">
                             <!-- Profile picture image-->
-                            <img class="img-account-profile rounded-circle mb-2" src="http://bootdey.com/img/Content/avatar/avatar1.png" alt="">
+                            @if($user->user_icon)
+                                <img class="img-account-profile rounded-circle mb-2" 
+                                     src="{{ asset('storage/' . $user->user_icon) }}" 
+                                     alt="{{ $user->u_fname }}'s profile picture"
+                                     style="width: 187px; height: 187px; object-fit: cover;">
+                            @else
+                                <img class="img-account-profile rounded-circle mb-2" 
+                                     src="http://bootdey.com/img/Content/avatar/avatar1.png" 
+                                     alt="Default profile picture"
+                                     style="width: 187px; height: 187px; object-fit: cover;">
+                            @endif
                             <div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
-                            <button class="btn btn-primary" type="button">Upload new image</button>
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="user_icon" name="user_icon" accept=".jpg, .jpeg, .png"
+                                            onchange="document.querySelector('.custom-file-label').textContent = this.files[0].name">
+                                        <label class="custom-file-label" for="user_icon">Choose image</label>
+                                    </div>
+                                </div>
+                                @error('user_icon')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -35,12 +63,18 @@
                             <div class="mb-3">
                                 <label class="small mb-1" for="u_username">Username</label>
                                 <input class="form-control" id="u_username" name="u_username" type="text" placeholder="Enter your username" value="{{ old('u_username', $user->u_username) }}">
+                                @error('u_username')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
                             </div>
 
                             <div class="row gx-3 mb-3">
                                 <div class="col-md-4">
                                     <label class="small mb-1" for="u_fname">First name</label>
                                     <input class="form-control" id="u_fname" name="u_fname" type="text" placeholder="Enter your first name" value="{{ old('u_fname', $user->u_fname) }}">
+                                    @error('u_fname')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                 </div>
                                 <div class="col-md-4">
                                     <label class="small mb-1" for="u_mname">Middle name</label>
@@ -49,6 +83,9 @@
                                 <div class="col-md-4">
                                     <label class="small mb-1" for="u_lname">Last name</label>
                                     <input class="form-control" id="u_lname" name="u_lname" type="text" placeholder="Enter your last name" value="{{ old('u_lname', $user->u_lname) }}">
+                                    @error('u_lname')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                 </div>
                             </div>
 
@@ -61,13 +98,16 @@
                                         <option value="0" {{ old('u_gender', $user->u_gender) == 0 ? 'selected' : '' }}>Female</option>
                                     </select>
                                     @error('u_gender')
-                                        <span class="error text-danger">{{ $message }}</span>
+                                        <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="small mb-1" for="u_contact">Phone number</label>
                                     <input class="form-control" id="u_contact" name="u_contact" type="tel" placeholder="Enter your phone number" value="{{ old('u_contact', $user->u_contact) }}">
+                                    @error('u_contact')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
                                 </div>
                             </div>
 

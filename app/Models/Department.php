@@ -16,9 +16,15 @@ class Department extends Model
 
     public $timestamps = false; // `created_at` and `updated_at` are NULL
 
-    
-    public function users() {
+
+    public function users()
+    {
         return $this->hasMany(User::class, 'd_id');
+    }
+
+    public function prRequests()
+    {
+        return $this->hasMany(PrRequest::class);
     }
 
 }

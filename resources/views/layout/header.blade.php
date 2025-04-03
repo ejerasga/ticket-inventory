@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,9 +17,11 @@
 
     <!-- Navbar styling -->
     <link rel="stylesheet" href="{{ asset('assets/css/sb-admin-2.min.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    
+
     {{-- <link rel="stylesheet" href="{{ asset('assets/css/profile.css') }}"> --}}
 
     <!-- Datatables -->
@@ -32,13 +35,45 @@
 
     <!-- FullCalendar -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@6.1.15/index.global.min.js'></script>
-    
 
+    <style>
+        .evaluation-alert {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #f5c6cb;
+            margin-bottom: 0;
+        }
 
+        .evaluation-alert a {
+            color: #721c24;
+            text-decoration: underline;
+        }
+    </style>
 
 </head>
-<body>
 
+<body>
+    <!-- Evaluation notification -->
+    @php
+        $pendingEvaluationCount = 0;
+        if (Auth::check()) {
+            $pendingEvaluationCount = DB::table('tickets')
+                ->where('f_name', Auth::user()->u_fname)
+                ->where('l_name', Auth::user()->u_lname)
+                ->where('status', 2)
+                ->count();
+        }
+    @endphp
+
+    @if ($pendingEvaluationCount >= 1)
+        <div class="evaluation-alert">
+            You have {{ $pendingEvaluationCount }} ticket(s) to evaluate. <a href="{{ route('ticket_list') }}">Click
+                here</a> to proceed with evaluation.
+        </div>
+    @endif
 
     <!-- Page Wrapper -->
     <div id="wrapper">
@@ -47,7 +82,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('dashboard')}}">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('dashboard') }}">
                 <img src={{ asset('assets/images/FUJI-HAYA.png') }} width="80%" height="30" />
             </a>
 
@@ -63,22 +98,30 @@
             </li>
 
             <!-- Nav Item - Tickets -->
-            <li class="nav-item {{ Request::routeIs('ticket_create') || Request::routeIs('ticket_list') ? 'active' : '' }}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            <li
+                class="nav-item {{ Request::routeIs('ticket_create') || Request::routeIs('ticket_list') ? 'active' : '' }}">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOne"
+                    aria-expanded="true" aria-controls="collapseOne">
                     <i class="fas fa-fw fa-ticket-alt"></i>
                     <span>Ticket</span>
                 </a>
                 <div id="collapseOne" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item {{ Request::routeIs('ticket_create') ? 'active' : '' }}" href="{{ route('ticket_create')}}">Create Ticket</a>
-                        <a class="collapse-item {{ Request::routeIs('ticket_list') ? 'active' : '' }}" href="{{ route('ticket_list')}}">Ticket List</a>
+                        <a class="collapse-item {{ Request::routeIs('ticket_create') ? 'active' : '' }}"
+                            href="{{ $pendingEvaluationCount >= 2 ? '#' : route('ticket_create') }}"
+                            onclick="{{ $pendingEvaluationCount >= 2 ? "alert('Please evaluate your pending tickets first.');" : '' }}"
+                            title="{{ $pendingEvaluationCount >= 2 ? 'Please evaluate your pending tickets first' : 'Create Ticket' }}">
+                            Create Ticket
+                        </a>
+                        <a class="collapse-item {{ Request::routeIs('ticket_list') ? 'active' : '' }}"
+                            href="{{ route('ticket_list') }}">Ticket List</a>
                     </div>
                 </div>
             </li>
 
             <!-- Nav Item - Calendar -->
             <li class="nav-item {{ Request::routeIs('calendar') ? 'active' : '' }}">
-                <a class="nav-link" href="{{ route('calendar')}}">
+                <a class="nav-link" href="{{ route('calendar') }}">
                     <i class="fas fa-fw fa-calendar-alt"></i>
                     <span>Calendar</span>
                 </a>
@@ -87,29 +130,50 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            
+
             <!-- Admin Privileges -->
-            @if (Auth::user()->r_id == 1)
-            <div class="sidebar-heading">
-                Super Admin Privileges
-            </div>
-
-            <!-- Nav Item - Users -->
-            <li class="nav-item {{ Request::routeIs('user_create') || Request::routeIs('user_list') ? 'active' : '' }}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Users</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">CRUD:</h6>
-                        <a class="collapse-item {{ Request::routeIs('user_create') ? 'active' : '' }}" href="{{ route('user_create')}}">Create User</a>
-                        <a class="collapse-item {{ Request::routeIs('user_list') ? 'active' : '' }}" href="{{ route('user_list')}}">List Users</a>
-                    </div>
+            @if (Auth::check() && Auth::user()->r_id == 1)
+                <div class="sidebar-heading">
+                    Super Admin Privileges
                 </div>
-            </li>
 
-            <hr class="sidebar-divider">
+                <!-- Nav Item - Users -->
+                <li
+                    class="nav-item {{ Request::routeIs('user_create') || Request::routeIs('user_list') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                        aria-expanded="true" aria-controls="collapseTwo">
+                        <i class="fas fa-fw fa-user"></i>
+                        <span>Users</span>
+                    </a>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">CRUD:</h6>
+                            <a class="collapse-item {{ Request::routeIs('user_create') ? 'active' : '' }}"
+                                href="{{ route('user_create') }}">Create User</a>
+                            <a class="collapse-item {{ Request::routeIs('user_list') ? 'active' : '' }}"
+                                href="{{ route('user_list') }}">List Users</a>
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item {{ Request::routeIs('view_inventory') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('view_inventory') }}">
+                        <i class="fas fa-fw fa-pencil"></i>
+                        <span>Manage Inventory</span>
+                    </a>
+                </li>
+            @endif
+
+            @if (Auth::check() && Auth::user()->r_id == 2)
+                <!-- Nav Item - Manage Inventory -->
+                <div class="sidebar-heading">
+                    Admin Privileges
+                </div>
+                <li class="nav-item {{ Request::routeIs('view_inventory') ? 'active' : '' }}">
+                    <a class="nav-link" href="{{ route('view_inventory') }}">
+                        <i class="fas fa-fw fa-pencil"></i>
+                        <span>Manage Inventory</span>
+                    </a>
+                </li>
             @endif
 
         </ul>
@@ -124,7 +188,7 @@
                 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
-    
+
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -168,14 +232,15 @@
                                     Alerts Center
                                 </h6>
                                 <!-- Alerts will be dynamically inserted here -->
-                                <a class="dropdown-item text-center small text-gray-500" href="{{ route('ticket_list')}}">Show All Alerts</a>
+                                <a class="dropdown-item text-center small text-gray-500"
+                                    href="{{ route('ticket_list') }}">Show All Alerts</a>
                             </div>
                         </li>
 
                         <!-- JavaScript to load alerts -->
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {
-                                fetch('{{ route("alerts") }}')
+                                fetch('{{ route('alerts') }}')
                                     .then(response => response.json())
                                     .then(data => {
                                         // Update badge count
@@ -198,16 +263,15 @@
                                             iconDiv.className = 'mr-3';
                                             iconDiv.innerHTML = `
                                                 <div class="icon-circle ${bgClass}">
-                                                    <i class="${iconClass} text-white"></i>
+                                                <i class="${iconClass} text-white"></i>
                                                 </div>
-                                            `;
+                                                `;
 
                                             const contentDiv = document.createElement('div');
                                             contentDiv.innerHTML = `
                                                 <div class="small text-gray-500">${ticket.t_control_no}</div>
                                                 <span>${message}</span>
-                                            `;
-
+                                                `;
                                             alertItem.appendChild(iconDiv);
                                             alertItem.appendChild(contentDiv);
                                             return alertItem;
@@ -215,14 +279,16 @@
 
                                         // Add For Approval alerts
                                         data.for_approval.forEach(ticket => {
-                                            const message = `A new ticket has been created by ${ticket.f_name} ${ticket.l_name}.`;
+                                            const message =
+                                                `A new ticket has been created by ${ticket.f_name} ${ticket.l_name}.`;
                                             const alert = createAlert(ticket, 'bg-primary', 'fas fa-clock', message);
                                             dropdown.insertBefore(alert, showAllLink);
                                         });
 
                                         // Add In Progress alerts
                                         data.in_progress.forEach(ticket => {
-                                            const message = `Your ticket has been assigned by ${ticket.f_name} ${ticket.l_name}.`;
+                                            const message =
+                                                `Your ticket has been assigned by ${ticket.f_name} ${ticket.l_name}.`;
                                             const alert = createAlert(ticket, 'bg-success', 'fas fa-redo', message);
                                             dropdown.insertBefore(alert, showAllLink);
                                         });
@@ -237,15 +303,14 @@
                                         // If there are more than 3 alerts, make them scrollable
                                         if (data.for_approval.length + data.in_progress.length + data.for_evaluation.length > 3) {
                                             dropdown.style.maxHeight = '300px'; // Set a max height for the dropdown
-                                            dropdown.style.overflowY = 'auto';  // Enable scrolling
+                                            dropdown.style.overflowY = 'auto'; // Enable scrolling
                                         }
                                     })
-                                .catch(error => console.error('Error loading alerts:', error));
+                                    .catch(error => console.error('Error loading alerts:', error));
                             });
-
                         </script>
 
-                        
+
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
@@ -253,20 +318,31 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->u_fname . ' ' . Auth::user()->u_lname}}</span>
-                                <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                    {{ Auth::user() ? Auth::user()->u_fname . ' ' . Auth::user()->u_lname : '' }}
+                                </span>
+                                @php
+                                    $user = Auth::user();
+                                    $imagePath =
+                                        $user && $user->user_icon
+                                            ? asset('storage/' . $user->user_icon)
+                                            : 'http://bootdey.com/img/Content/avatar/avatar1.png';
+                                @endphp
+                                <img class="img-profile rounded-circle" src="{{ asset($imagePath) }}"
+                                    alt="Profile Image">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{{ route('user_profile', ['u_id' => Auth::user()->u_id]) }}">
+                                <a class="dropdown-item"
+                                    href="{{ Auth::user() ? route('user_profile', ['u_id' => Auth::user()->u_id]) : '#' }}">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                
+
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="#" data-toggle="modal"
+                                    data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -278,7 +354,7 @@
                 </nav>
                 <!-- End of Topbar -->
 
-                
+
 
 
                 @yield('content')
@@ -327,41 +403,34 @@
                         @csrf
                     </form>
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a class="btn btn-primary" href="{{ route('logout') }}"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         Logout
                     </a>
-                
+
                 </div>
             </div>
         </div>
     </div>
-    
-
-        <!-- Bootstrap core JavaScript-->
-        <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
-        <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
-    
-        <!-- Core plugin JavaScript-->
-        <script src="{{ asset('assets/js/jquery.easing.min.js') }}"></script>
-    
-        <!-- Custom scripts for all pages-->
-        <script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
-
-        <!-- DataTables -->
-        <script src="{{ asset('assets/js/jquery.dataTables.min.js') }}"></script>
-        <script src="{{ asset('assets/js/dataTables.bootstrap4.min.js') }}"></script>
-        <script src="{{ asset('assets/js/datatables-demo.js') }}"></script>
-
-        <!-- Chart JS -->
-        <script src="{{ asset('assets/js/Chart.min.js') }}"></script>
-    
-    
-
-        
 
 
+    <!-- Bootstrap core JavaScript-->
+    <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 
+    <!-- Core plugin JavaScript-->
+    <script src="{{ asset('assets/js/jquery.easing.min.js') }}"></script>
 
+    <!-- Custom scripts for all pages-->
+    <script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
 
+    <!-- DataTables -->
+    <script src="{{ asset('assets/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('assets/js/datatables-demo.js') }}"></script>
+
+    <!-- Chart JS -->
+    <script src="{{ asset('assets/js/Chart.min.js') }}"></script>
 </body>
+
 </html>

@@ -12,40 +12,51 @@ use App\Models\User;
 use App\Models\Evaluation;
 
 
-class TicketController extends Controller {
-    public function index() {
+class TicketController extends Controller
+{
+    public function index()
+    {
 
 
         $services = Service::all();
         $locations = Location::all();
         $departments = Department::all();
 
-        return view('ticket.create_ticket', compact('services', 'locations' , 'departments'));
+        return view('ticket.create_ticket', compact('services', 'locations', 'departments'));
     }
 
 
 
     // Store a new ticket in the database
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $request->validate([
-            's_id' => 'required', 
-            'l_id' => 'required', 
-            'd_id' => 'required|exists:departments,d_id', 
+            's_id' => 'required',
+            'l_id' => 'required',
+            'd_id' => 'required|exists:departments,d_id',
             'f_name' => 'required',
             'l_name' => 'required',
             'date_needed' => 'required|date',
             'time_needed' => 'required|date_format:H:i',
             'description' => 'required',
+            'ticket_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-    
+
         // Get the currently logged-in user
         $user = auth()->user();
-    
+
+        // Get the department name for the folder structure
+        $department = Department::find($request->input('d_id'));
+        $departmentName = $department ? $department->d_name : 'general';
+
+        // Create user folder name (first + last name)
+        $userFolderName = $request->input('f_name') . $request->input('l_name');
+
         // Convert date_needed and time_needed into a full datetime format
         $dateNeeded = $request->input('date_needed');
         $timeNeeded = $request->input('time_needed');
         $dateTimeNeeded = $dateNeeded . ' ' . $timeNeeded . ':00'; // Format: YYYY-MM-DD HH:MM:SS
-    
+
         // Create the ticket object
         $ticket = new Ticket();
         $ticket->s_id = $request->input('s_id');
@@ -56,20 +67,34 @@ class TicketController extends Controller {
         $ticket->date_needed = $dateNeeded;
         $ticket->time_needed = $dateTimeNeeded; // Store full datetime
         $ticket->description = $request->input('description');
-    
+
         // Assign req_by as the logged-in user's ID
-        $ticket->req_by = $user->u_id;  
-    
+        $ticket->req_by = $user->u_id;
+
         // Assign t_control_no with a unique ticket ID
         $ticket->t_control_no = 'TCKT-' . uniqid();
-    
+
+        // Handle image uploads
+        $imagePaths = [];
+
+        if ($request->hasFile('ticket_images')) {
+            foreach ($request->file('ticket_images') as $image) {
+                // Create folder structure: ticket_images/department_name/user_firstname_lastname/
+                $path = $image->store('ticket_images/' . $departmentName . '/' . $userFolderName, 'public');
+                $imagePaths[] = $path;
+            }
+        }
+
+        // Save image paths as JSON in upld_img field
+        $ticket->upld_img = !empty($imagePaths) ? json_encode($imagePaths) : null;
+
         // Save the ticket
         $ticket->save();
-    
+
         return redirect()->route('ticket_list')->with('success', 'Ticket created successfully!');
     }
-    
-    
+
+
     // Display the list of tickets
     public function tickets()
     {
@@ -97,7 +122,7 @@ class TicketController extends Controller {
         ]);
 
         $ticket = Ticket::findOrFail($id);
-        
+
         // Verify if the assigner is a Super Admin
         if (Auth::user()->r_id != 1) {
             return redirect()->route('ticket_list')
@@ -124,7 +149,7 @@ class TicketController extends Controller {
     public function completeTicket($id)
     {
         $ticket = Ticket::findOrFail($id);
-        
+
         // Verify if the user is the assigned staff
         if ($ticket->assigned_to != Auth::user()->u_id) {
             return redirect()->route('ticket_list')
@@ -143,7 +168,7 @@ class TicketController extends Controller {
     public function rejectTicket($id)
     {
         $ticket = Ticket::findOrFail($id);
-        
+
         // Verify if the user is the assigned staff
         if ($ticket->assigned_to != Auth::user()->u_id) {
             return redirect()->route('ticket_list')
@@ -161,7 +186,7 @@ class TicketController extends Controller {
     public function evaluateTicket($id)
     {
         $ticket = Ticket::findOrFail($id);
-        
+
         // Check if user is authorized to evaluate this ticket
         if ($ticket->req_by != Auth::user()->u_id) {
             return redirect()->route('ticket_list')
@@ -181,7 +206,7 @@ class TicketController extends Controller {
     public function saveEvaluation(Request $request, $id)
     {
         $ticket = Ticket::findOrFail($id);
-        
+
         // Validate request
         $request->validate([
             'work_quality' => 'required|integer|between:1,5',
@@ -210,13 +235,13 @@ class TicketController extends Controller {
         return redirect()->route('ticket_list')
             ->with('success', 'Thank you for your evaluation!');
     }
-    
+
     // Get all evaluations for a ticket
     public function showTicketInfo($id)
     {
         $ticket = Ticket::with(['service', 'location', 'department', 'assignedStaff'])
             ->findOrFail($id);
-        
+
         return view('ticket.ticket_info', compact('ticket'));
     }
 

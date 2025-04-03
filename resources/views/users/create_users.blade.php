@@ -15,16 +15,16 @@
                 <form action="{{ route('user_save') }}" method="POST">
                     @csrf
                     <div class="form-group">
-                        <label for="u_username">Username:</label>
+                        <label for="u_username">Username: <span style="color: red;">*</span></label> 
                         <input type="text" class="form-control" id="u_username" name="u_username"
                             aria-describedby="emailHelp">
                         @error('u_username')
-                            <span class="error text-danger">{{ $message }}</span>
+                            <span class="error text-danger" style="font-size: 1rem">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
-                        <label for="u_password">Password:</label>
+                        <label for="u_password">Password:</label> <span style="color: red;">*</span></label> 
                         <input type="password" class="form-control" id="u_password" name="u_password">
                         @error('u_password')
                             <span class="error text-danger" style="font-size: 1rem">{{ $message }}</span>
@@ -32,49 +32,50 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="u_fname">First Name:</label>
+                        <label for="u_fname">First Name:</label> <span style="color: red;">*</span></label> 
                         <input type="text" class="form-control" id="u_fname" name="u_fname">
                         @error('u_fname')
-                            <span class="error text-danger">{{ $message }}</span>
+                            <span class="error text-danger" style="font-size: 1rem">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
-                        <label for="u_mname">Middle Name:</label>
+                        <label for="u_mname">Middle Name:</label> <span style="color: red;">*</span></label> 
                         <input type="text" class="form-control" id="u_mname" name="u_mname">
                         @error('u_mname')
-                            <span class="error text-danger">{{ $message }}</span>
+                            <span class="error text-danger" style="font-size: 1rem">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
-                        <label for="u_lname">Last Name:</label>
+                        <label for="u_lname">Last Name:</label> <span style="color: red;">*</span></label> 
                         <input type="text" class="form-control" id="u_lname" name="u_lname">
                         @error('u_lname')
-                            <span class="error text-danger">{{ $message }}</span>
+                            <span class="error text-danger" style="font-size: 1rem">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
-                        <label for="u_gender">Gender:</label>
+                        <label for="u_gender">Gender:</label> <span style="color: red;">*</span></label> 
                         <select class="form-control" id="u_gender" name="u_gender">
                             <option value="">Select Gender</option>
                             <option value="1">Male</option>
                             <option value="0">Female</option>
                         </select>
                         @error('u_gender')
-                            <span class="error text-danger">{{ $message }}</span>
+                            <span class="error text-danger" style="font-size: 1rem">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="form-group">
-                        <label for="u_contact">Contact:</label>
-                        <input type="tel" class="form-control" id="u_contact" name="u_contact"
-                            placeholder="09451854051">
+                        <label for="u_contact">Contact:</label> <span style="color: red;">*</span></label> 
+                        <input type="tel" class="form-control" id="u_contact" name="u_contact" placeholder="09451854051"
+                            pattern="09\d{9}"
+                            title="Contact number should be 11 digits and should start with 09 (e.g 09365821564)">
                     </div>
 
                     <div class="form-group">
-                        <label for="d_id">Department:</label>
+                        <label for="d_id">Department:</label> <span style="color: red;">*</span></label> 
                         <select class="form-control" id="d_id" name="d_id">
                             <option value="">Select Department</option>
                             @foreach ($departments as $department)
@@ -83,7 +84,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="r_id">Roles:</label>
+                        <label for="r_id">Roles:</label> <span style="color: red;">*</span></label> 
                         <select class="form-control" id="r_id" name="r_id">
                             <option value="">Select Role</option>
                             @foreach ($roles as $role)

@@ -1,11 +1,17 @@
 <?php
 
+use App\Http\Controllers\StockController;
+use App\Models\Stock;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\ItemDeployedController;
+use App\Http\Controllers\PCSpecsController;
+use App\Http\Controllers\PrRequestController;
 
 Route::get('/', function () {
     return view('login');
@@ -30,6 +36,8 @@ Route::get('/user/edit/{u_id}', [UserController::class, 'edit'])->name('user_edi
 Route::put('/user/update/{u_id}', [UserController::class, 'update'])->name('user_update'); // Update user
 Route::get('/user/list', [UserController::class, 'users'])->name('user_list'); // List of users
 Route::get('/user/profile/{u_id}', [UserController::class, 'profile'])->name('user_profile'); // User profile page
+Route::post('/user/delete/{u_id}', [UserController::class, 'destroy'])->name('user_delete');
+Route::put('/profile/{u_id}', [UserController::class, 'updateProfile'])->name('profile.update');
 
 
 
@@ -46,7 +54,40 @@ Route::get('/ticket/info/{id}', [TicketController::class, 'showTicketInfo'])->na
 
 Route::get('/alerts', [TicketController::class, 'getAlerts'])->name('alerts'); // Get alerts for notifications
 
+// Inventory
 
+Route::get('/inventory/viewInventory', [InventoryController::class, 'viewInventory'])->name('view_inventory'); 
+
+    // --- Stocks
+Route::get('/inventory/viewstock', [StockController::class, 'index'])->name('view_stock');
+Route::get('/inventory/createstock', [StockController::class, 'create'])->name('create_stock');
+Route::post('/inventory/storestock', [StockController::class, 'store'])->name('store_stock');
+Route::get('/inventory/editstock/{id}', [StockController::class, 'edit'])->name('edit_stock');
+Route::put('/inventory/updatestock/{id}', [StockController::class, 'update'])->name('update_stock');
+Route::delete('/inventory/deletestock/{id}', [StockController::class, 'destroy'])->name('delete_stock');
+
+    // --- Items Deployed
+Route::get('/inventory/itemdeployed', [ItemDeployedController::class, 'index'])->name('item_deployed');
+Route::get('/inventory/createitemdeployed', [ItemDeployedController::class, 'create'])->name('create_itemdeployed');
+Route::post('/inventory/storeitemdeployed', [ItemDeployedController::class, 'store'])->name('store_itemdeployed');
+Route::get('/inventory/edititemdeployed/{id}', [ItemDeployedController::class, 'edit'])->name('edit_itemdeployed');
+Route::put('/inventory/updateitemdeployed/{id}', [ItemDeployedController::class, 'update'])->name('update_itemdeployed');
+Route::delete('/inventory/deleteitemdeployed/{id}', [ItemDeployedController::class, 'destroy'])->name('delete_itemdeployed');   
+
+    // --- PC Specs 
+Route::get('/inventory/pcspecs', [PcSpecsController::class, 'index'])->name('pcspecs.index');
+Route::post('/inventory/pcspecs', [PcSpecsController::class, 'store'])->name('pcspecs.store');
+Route::get('/inventory/pcspecs/{pcspec}/edit', [PcSpecsController::class, 'edit'])->name('pcspecs.edit');
+Route::put('/inventory/pcspecs/{pcspec}', [PcSpecsController::class, 'update'])->name('pcspecs.update');
+Route::delete('/inventory/pcspecs/{pcspec}', [PcSpecsController::class, 'destroy'])->name('pcspecs.destroy');
+Route::get('/inventory/pcspecs/{pcspec}/images', [PcSpecsController::class, 'images'])->name('pcspecs.images');
+
+    // --- PR Requests
+Route::get('/prrequests', [PrRequestController::class, 'index'])->name('prrequests.index');
+Route::post('/prrequests', [PrRequestController::class, 'store'])->name('prrequests.store');
+Route::get('/prrequests/{prrequest}/edit', [PrRequestController::class, 'edit'])->name('prrequests.edit');
+Route::put('/prrequests/{prrequest}', [PrRequestController::class, 'update'])->name('prrequests.update');
+Route::delete('/prrequests/{prrequest}', [PrRequestController::class, 'destroy'])->name('prrequests.destroy');
 
 // FullCalendar
 Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar'); // send user to calendar

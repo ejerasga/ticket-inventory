@@ -19,7 +19,8 @@ class User extends Authenticatable
         'u_gender', 
         'u_contact', 
         'r_id', 
-        'd_id'
+        'd_id',
+        'user_icon'
     ];
 
     public function role() {
