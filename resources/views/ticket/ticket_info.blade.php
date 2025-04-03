@@ -1,6 +1,5 @@
 @extends('layout.header')
 @section('content')
-
 <!-- resources\views\ticket\ticket_info.blade.php -->
 <div class="container-fluid">
     <div class="card shadow mb-4">
@@ -14,11 +13,12 @@
             <div class="row mb-4">
                 <div class="col-md-6">
                     <h6 class="font-weight-bold">Service Details:</h6>
+                    <p><strong>Requested By:</strong> {{ $ticket->f_name }} {{ $ticket->l_name }}</p>
                     <p><strong>Service:</strong> {{ $ticket->service->s_name }}</p>
                     <p><strong>Location:</strong> {{ $ticket->location->located_at }}</p>
                     <p><strong>Department:</strong> {{ $ticket->department ? $ticket->department->d_name : 'N/A' }}</p>
-                    <p><strong>Date Needed:</strong> {{ $ticket->date_needed }}</p>
-                    <p><strong>Time Needed:</strong> {{ $ticket->time_needed }}</p>
+                    <p><strong>Date Needed:</strong> {{ \Carbon\Carbon::parse($ticket->date_needed)->format('m/d/Y') }}</p>
+                    <p><strong>Time Needed:</strong> {{ \Carbon\Carbon::parse($ticket->time_needed)->format('h:i A') }}</p>
                 </div>
                 <div class="col-md-6">
                     <h6 class="font-weight-bold">Status Information:</h6>
@@ -44,11 +44,38 @@
                     @endif
                 </div>
             </div>
-
             <div class="mb-4">
                 <h6 class="font-weight-bold">Description:</h6>
                 <p>{{ $ticket->description }}</p>
             </div>
+
+            <!-- Uploaded Images Section -->
+            @if($ticket->upld_img)
+                <div class="mb-4">
+                    <h6 class="font-weight-bold">Uploaded Images:</h6>
+                    <div class="row">
+                        @php
+                            $images = json_decode($ticket->upld_img, true);
+                        @endphp
+                        
+                        @if(is_array($images) && count($images) > 0)
+                            @foreach($images as $image)
+                                <div class="col-md-4 mb-3">
+                                    <div class="card">
+                                        <a href="{{ asset('storage/' . $image) }}" target="_blank">
+                                            <img src="{{ asset('storage/' . $image) }}" class="card-img-top img-fluid" alt="Ticket Image">
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="col-12">
+                                <p class="text-muted">No images available</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
 
             <!-- Action Buttons -->
             <div class="text-center">
@@ -62,7 +89,6 @@
                         <button type="submit" class="btn btn-danger">Reject</button>
                     </form>
                 @endif
-
                 @if($ticket->status == 2 && $ticket->req_by == Auth::user()->u_id)
                     <a href="{{ route('ticket_evaluate', $ticket->t_id) }}" class="btn btn-primary">
                         Evaluate
@@ -72,5 +98,4 @@
         </div>
     </div>
 </div>
-
 @endsection

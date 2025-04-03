@@ -5,55 +5,85 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Ticket extends Model {
+class Ticket extends Model
+{
     use HasFactory;
 
     protected $primaryKey = 't_id';
     protected $fillable = [
-        's_id', 
+        's_id',
         'located_at',
-        'd_id', 
+        'd_id',
         'f_name',
         'l_name',
-        'date_needed', 
+        'date_needed',
         'time_needed',
-        'description', 
-        'req_by', 
+        'description',
+        'req_by',
         'received_by',
         'date_requested',
         'status',
         'final_status',
-        'assigned_to'
+        'assigned_to',
+        'upld_img',
     ];
 
     // Relationship with Service model
-    public function service() {
+    public function service()
+    {
         return $this->belongsTo(Service::class, 's_id');
     }
 
     // Relationship with User model (requester)
-    public function requester() {
+    public function requester()
+    {
         return $this->belongsTo(User::class, 'req_by');
     }
 
     // Relationship with User model (receiver)
-    public function receiver() {
+    public function receiver()
+    {
         return $this->belongsTo(User::class, 'received_by');
     }
 
     // Relationship with Location model
-    public function location() {
+    public function location()
+    {
         return $this->belongsTo(Location::class, 'located_at');
     }
 
     // Relationship with Department model
-    public function department() {
+    public function department()
+    {
         return $this->belongsTo(Department::class, 'd_id', 'd_id');
     }
 
     // relationship to the User model 
-    public function assignedStaff() {
+    public function assignedStaff()
+    {
         return $this->belongsTo(User::class, 'assigned_to', 'u_id');
     }
+
+    /**
+     * Get the array of image URLs for this ticket
+     *
+     * @return array
+     */
+    public function getImageUrls()
+    {
+        if (empty($this->upld_img)) {
+            return [];
+        }
+
+        $paths = json_decode($this->upld_img, true);
+        $urls = [];
+
+        foreach ($paths as $path) {
+            $urls[] = asset('storage/' . $path);
+        }
+
+        return $urls;
+    }
+
 
 }
